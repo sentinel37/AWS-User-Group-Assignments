@@ -1,0 +1,26 @@
+#! /bin/bash
+
+#generate a list of users in the AWS Account
+aws iam list-users --output text --profile <profile name if no role is attached to instance> | cut -f '7'>>user-names.txt
+allUsers=$(cat ./user-names.txt)
+for userName in $allUsers; do
+       
+       echo -e "\n\n\n User: $userName">>report.txt
+       #Generate a text file of user permissions granted by group association
+       aws iam list-groups-for-user --profile <profile name if no role is attached to instance> --region us-east-1 --output table \
+              --user-name $userName \
+                                        >>report.txt
+done 
+#send an email with the attached report 
+echo -e "Please review attached" | mail -s "report" -r "<origin email>" -a ./report.txt "<origin email>" > /dev/null 2>&1 
+rm -rf report.txt user-names.txt
+
+
+echo “New VPC Build Completed” | mail -s "CSR file for $domain" -r "<origin email>" "<origin email>"  > /dev/null 2>&1
+
+
+
+
+
+vi /etc/postfix/main.cf
+relayhost = <email relay>
